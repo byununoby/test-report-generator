@@ -26,6 +26,17 @@
     ['date', 'orderNo', 'poNo', 'customer', 'color', 'quantity', 'batchNo', 'productName', 'writer', 'reviewer', 'approver']
       .forEach(function (id) { $(id).addEventListener('input', renderPreview); });
 
+    // 붙여넣기: 파일 선택 없이 클립보드 텍스트로 데이터 입력 (파일 반입 보안 정책 회피 불필요)
+    $('pasteBox').addEventListener('paste', function (e) {
+      var text = (e.clipboardData || window.clipboardData).getData('text');
+      if (!text) return;
+      e.preventDefault();
+      this.value = text;
+      usePasted(text);
+    });
+    $('pasteBox').addEventListener('input', function () { if (this.value.trim()) usePasted(this.value); });
+    $('copyBtn').addEventListener('click', copyResult);
+
     $('file').addEventListener('change', function (e) { if (e.target.files[0]) loadFile(e.target.files[0]); e.target.value = ''; });
     var drop = $('drop');
     drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('over'); });
@@ -41,6 +52,7 @@
     $('resetBtn').addEventListener('click', function () {
       state = { rows: [], ev: null, fileName: '' };
       ['orderNo', 'quantity', 'batchNo', 'productName'].forEach(function (id) { $(id).value = ''; });
+      $('pasteBox').value = '';
       setStatus('', ''); refresh();
     });
     refresh();
@@ -102,6 +114,29 @@
     return v;
   }
 
+  // 엑셀에서 복사한 텍스트(탭 구분) 처리
+  function parseTSV(text) {
+    return String(text).replace(/\r\n?/g, '\n').split('\n')
+      .map(function (l) { return l.split('\t'); })
+      .filter(function (r) { return r.some(function (v) { return v.trim() !== ''; }); });
+  }
+
+  // 표준 입력 양식 컬럼 순서 (컬럼명 없이 데이터만 붙여넣은 경우 이 순서로 간주)
+  var DEFAULT_HEADER = ['Order No.', 'Batch No.', 'OTDR (m)', 'Fiber No.', 'Cable OD Max', 'Cable OD Min', 'Tight Buffer', 'Att1310', 'Att1550', 'Marking'];
+
+  var pasteTimer;
+  function usePasted(text) {
+    clearTimeout(pasteTimer);
+    pasteTimer = setTimeout(function () {
+      var table = text.indexOf('\t') !== -1 ? parseTSV(text) : Core.parseCSV(text);
+      try { Core.mapRows(table); }
+      catch (e) {
+        if (table.length && table[0].length >= 10) table = [DEFAULT_HEADER].concat(table);
+      }
+      useTable(table, '붙여넣은 데이터');
+    }, 150);
+  }
+
   function useTable(table, label) {
     try {
       var res = Core.mapRows(table);
@@ -129,7 +164,7 @@
       $('batchNo').placeholder = '데이터를 불러오면 자동 입력';
       $('productName').placeholder = typeOf().name;
     }
-    $('excelBtn').disabled = !ev; $('printBtn').disabled = !ev;
+    $('excelBtn').disabled = !ev; $('printBtn').disabled = !ev; $('copyBtn').disabled = !ev;
     renderSpec(); renderSummary(); renderPreview();
   }
 
@@ -362,6 +397,25 @@
       saveBlob(blob, Core.docNumber($('date').value, val('orderNo')) + '.xlsx');
       setStatus('엑셀 파일을 만들었습니다. 다운로드 폴더를 확인하세요.', 'ok');
     });
+  }
+
+  // 결과 표를 탭 구분 텍스트로 복사 → 기존 엑셀 양식 첫 데이터 칸에 붙여넣기
+  function copyResult() {
+    var ev = state.ev; if (!ev) return;
+    var keys = ['orderNo', 'batchNo', 'otdr', 'fiberNo', 'odMax', 'odMin', 'tightBuffer', 'att1310', 'att1550', 'marking'];
+    var dig = { odMax: 2, odMin: 2, att1310: 3, att1550: 3 };
+    var text = state.rows.map(function (r) {
+      return keys.map(function (k) { return r[k] == null ? '' : (dig[k] ? Number(r[k]).toFixed(dig[k]) : r[k]); }).join('\t');
+    }).join('\r\n');
+    var done = function () { setStatus(state.rows.length + '행을 복사했습니다. 엑셀 양식의 첫 데이터 칸을 선택하고 Ctrl+V 하세요. 판정 결과: ' + ev.qaResult, 'ok'); };
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    ta.remove();
+    if (ok) return done();
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () { setStatus('복사가 차단되었습니다. 엑셀로 저장 또는 PDF로 인쇄를 사용하세요.', 'err'); });
   }
 
   function downloadTemplate() {
