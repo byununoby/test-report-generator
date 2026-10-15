@@ -63,13 +63,22 @@ main { display: grid; grid-template-columns: minmax(300px, 380px) 1fr; gap: 20px
 .step h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 15px; font-weight: 700; }
 .step h2 b { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--blue); color: var(--blue-ink); font-size: 12px; }
 
+.paste { display: block; margin-bottom: 8px; }
+.paste strong { display: block; font-size: 14px; }
+.paste span { font-size: 12.5px; color: var(--muted); }
+textarea { font: 12.5px/1.4 Consolas, "D2Coding", monospace; color: var(--ink); background: var(--field); border: 1.5px dashed var(--line); border-radius: 8px; padding: 10px; width: 100%; resize: vertical; white-space: pre; }
+textarea:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; border-style: solid; }
+.filepick { position: relative; }
+.filepick input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.filepick:focus-within { outline: 2px solid var(--blue); outline-offset: 2px; }
+.btn.wide { grid-column: 1 / -1; font-weight: 500; font-size: 13px; }
 .drop { border: 1.5px dashed var(--line); border-radius: 8px; padding: 16px; text-align: center; background: var(--field); cursor: pointer; display: block; }
 .drop.over { border-color: var(--blue); }
 .drop strong { display: block; font-size: 14px; }
 .drop span { font-size: 12.5px; color: var(--muted); }
 .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .drop:focus-within { outline: 2px solid var(--blue); outline-offset: 2px; }
-.links { display: flex; gap: 14px; margin-top: 10px; font-size: 13px; }
+.links { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 13px; }
 .linkbtn { background: none; border: 0; padding: 0; color: var(--blue); font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 
 .status { margin-top: 10px; font-size: 13px; border-radius: 6px; padding: 0; }
@@ -163,14 +172,15 @@ table { border-collapse: collapse; }
   <div class="panel">
     <div class="step">
       <h2><b>1</b>시험 데이터 불러오기</h2>
-      <label class="drop" id="drop">
-        <input type="file" id="file" accept=".xlsx,.csv">
-        <strong>엑셀 또는 CSV 파일 선택</strong>
-        <span>여기로 끌어다 놓아도 됩니다</span>
+      <label class="paste" for="pasteBox">
+        <strong>엑셀에서 복사해서 붙여넣기</strong>
+        <span>엑셀에서 컬럼명 행부터 데이터 끝까지 선택해 Ctrl+C, 아래 칸을 누르고 Ctrl+V</span>
       </label>
+      <textarea id="pasteBox" rows="4" spellcheck="false" placeholder="여기에 붙여넣기 (Ctrl+V)"></textarea>
       <div class="links">
         <button type="button" class="linkbtn" id="sampleBtn">샘플 데이터로 해보기</button>
         <button type="button" class="linkbtn" id="templateBtn">입력 양식 받기</button>
+        <label class="linkbtn filepick" id="drop">파일로 불러오기<input type="file" id="file" accept=".xlsx,.csv"></label>
       </div>
       <div class="status" id="status" role="status" aria-live="polite"></div>
     </div>
@@ -203,6 +213,7 @@ table { border-collapse: collapse; }
       <div class="actions">
         <button type="button" class="btn primary" id="excelBtn" disabled>엑셀로 저장</button>
         <button type="button" class="btn" id="printBtn" disabled>PDF로 인쇄</button>
+        <button type="button" class="btn wide" id="copyBtn" disabled>결과 표 복사 (기존 엑셀 양식에 붙여넣기용)</button>
       </div>
       <button type="button" class="linkbtn reset" id="resetBtn">처음부터 다시</button>
     </div>
