@@ -1,0 +1,10 @@
+{
+  "name": "test-report-generator",
+  "version": "1.0.0",
+  "description": "광케이블 Test Report / 표지 자동 생성기 (브라우저 내부 처리, 데이터 외부 전송 없음)",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/report-core.test.js"
+  },
+  "license": "MIT"
+}
