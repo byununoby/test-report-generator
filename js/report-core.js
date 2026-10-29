@@ -9,16 +9,18 @@
 
   // 보고서에 필요한 항목. test: 원본 열 제목에서 이 항목을 자동으로 찾는 규칙
   var FIELDS = [
-    { key: 'orderNo',     label: 'Order No.',              test: /order|오더/ },
-    { key: 'batchNo',     label: 'Batch No. (LOT)',        test: /lot|batch|배치|로트/ },
-    { key: 'otdr',        label: 'OTDR (m)',               test: /otdr/,                    numeric: true },
-    { key: 'fiberNo',     label: 'Fiber No. (Drum No.)',   test: /fiber|drum|드럼|심선/ },
-    { key: 'odA',         label: 'Cable O.D. 측정값 1',     test: /cable\s*o\.?\s*d|외경/,    numeric: true },
-    { key: 'odB',         label: 'Cable O.D. 측정값 2',     test: /cable\s*o\.?\s*d|외경/,    numeric: true },
-    { key: 'tightBuffer', label: 'Tight Buffer O.D.',      test: /tight|타이트/,             numeric: true },
-    { key: 'att1310',     label: 'Attenuation 1310',       test: /1310/,                    numeric: true },
-    { key: 'att1550',     label: 'Attenuation 1550',       test: /1550/,                    numeric: true },
-    { key: 'marking',     label: 'Marking (인쇄간격)',      test: /marking|마킹|인쇄/ }
+    { key: 'orderNo',     label: 'Order No. (표지 PO No.)',   test: /order|오더/ },
+    { key: 'salesNo',     label: '수주번호 (표지 Order No.)',  test: /수주|sales/,              optional: true },
+    { key: 'batchNo',     label: 'Batch No. (Drum No.)',      test: /drum|batch|드럼|배치/ },
+    { key: 'qty',         label: 'Quantity (m)',              test: /quantity|수량/,           numeric: true, optional: true },
+    { key: 'otdr',        label: 'OTDR (m)',                  test: /otdr/,                    numeric: true },
+    { key: 'fiberNo',     label: 'Fiber No. (없으면 1)',       test: /fiber|심선/,              optional: true },
+    { key: 'odA',         label: 'Cable O.D. 측정값 1',        test: /cable\s*o\.?\s*d|외경/,    numeric: true },
+    { key: 'odB',         label: 'Cable O.D. 측정값 2',        test: /cable\s*o\.?\s*d|외경/,    numeric: true },
+    { key: 'tightBuffer', label: 'Tight Buffer O.D.',         test: /tight|타이트/,             numeric: true },
+    { key: 'att1310',     label: 'Attenuation 1310',          test: /1310/,                    numeric: true },
+    { key: 'att1550',     label: 'Attenuation 1550',          test: /1550/,                    numeric: true },
+    { key: 'marking',     label: 'Marking (인쇄간격)',         test: /marking|마킹|인쇄/ }
   ];
   // 열 제목 없이 데이터만 붙여넣었을 때 가정하는 순서 (입력 양식 순서)
   var DEFAULT_ORDER = ['orderNo', 'batchNo', 'otdr', 'fiberNo', 'odA', 'odB', 'tightBuffer', 'att1310', 'att1550', 'marking'];
@@ -125,7 +127,8 @@
         var v = map[f.key] >= 0 ? r[map[f.key]] : '';
         o[f.key] = f.numeric ? toNum(v) : clean(v);
       });
-      ['orderNo', 'batchNo'].forEach(function (k) { if (!o[k] && prev[k]) o[k] = prev[k]; prev[k] = o[k]; });
+      ['orderNo', 'salesNo'].forEach(function (k) { if (!o[k] && prev[k]) o[k] = prev[k]; prev[k] = o[k]; });
+      if (!o.fiberNo) o.fiberNo = '1';
       var od = [o.odA, o.odB].filter(function (x) { return x != null; });
       o.odMax = od.length ? Math.max.apply(null, od) : null;
       o.odMin = od.length ? Math.min.apply(null, od) : null;
@@ -138,7 +141,7 @@
   function mapRows(table) {
     var an = analyze(table), map = guessMapping(an);
     var rows = buildRows(an, map);
-    var missing = FIELDS.filter(function (f) { return map[f.key] < 0; }).map(function (f) { return f.label; });
+    var missing = FIELDS.filter(function (f) { return !f.optional && map[f.key] < 0; }).map(function (f) { return f.label; });
     return { rows: rows, missing: missing, mapping: map, analysis: an };
   }
 
@@ -185,6 +188,8 @@
     var results = rows.map(function (r) { return judgeRow(r, spec, config); });
     var failCount = results.filter(function (x) { return !x.pass; }).length;
     var totalLength = rows.reduce(function (a, r) { return a + (r.otdr || 0); }, 0);
+    var hasQty = rows.some(function (r) { return r.qty != null; });
+    var totalQty = hasQty ? rows.reduce(function (a, r) { return a + (r.qty || 0); }, 0) : totalLength;
     var batches = [];
     rows.forEach(function (r) { if (r.batchNo && batches.indexOf(r.batchNo) === -1) batches.push(r.batchNo); });
 
@@ -196,6 +201,7 @@
       qaResult: rows.length && failCount === 0 ? 'PASS' : 'FAIL',
       drums: rows.length,
       totalLength: totalLength,
+      totalQty: totalQty,
       batches: batches,
       stats: {
         otdr: stats(rows.map(function (r) { return r.otdr; })),
@@ -220,6 +226,17 @@
     return '';
   }
 
+  // 수주번호 2026-S50-0144-001-001 → 2026-S50-0144
+  function salesPrefix(v) {
+    var p = String(v || '').split('-');
+    return p.length > 3 ? p.slice(0, 3).join('-') : String(v || '');
+  }
+  // 2026-07-13 → 07/13/26
+  function usDate(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+    return m ? m[2] + '/' + m[3] + '/' + m[1].slice(2) : (iso || '');
+  }
+
   // 문서번호: TR-YYYYMMDD-오더번호
   function docNumber(dateStr, orderNo) {
     var d = String(dateStr || '').replace(/-/g, '');
@@ -230,6 +247,6 @@
   return {
     FIELDS: FIELDS, parseCSV: parseCSV, parseTSV: parseTSV, analyze: analyze, guessMapping: guessMapping,
     buildRows: buildRows, colName: colName, mapRows: mapRows, judgeRow: judgeRow,
-    evaluate: evaluate, stats: stats, specText: specText, docNumber: docNumber
+    evaluate: evaluate, stats: stats, salesPrefix: salesPrefix, usDate: usDate, specText: specText, docNumber: docNumber
   };
 });
