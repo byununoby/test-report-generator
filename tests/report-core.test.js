@@ -29,7 +29,8 @@ test('모든 값이 규격 안이면 PASS', () => {
   const ev = core.evaluate(rows, 'Type 1', config);
   assert.strictEqual(ev.qaResult, 'PASS');
   assert.strictEqual(ev.drums, 12);
-  assert.deepStrictEqual(ev.batches, ['B2610-01', 'B2610-02']);
+  assert.strictEqual(ev.batches.length, 12);
+  assert.strictEqual(ev.batches[0], '01001');  // 앞자리 0 유지
 });
 
 test('규격 경계값은 합격으로 본다', () => {
@@ -69,8 +70,11 @@ test('원본 양식 구조(여러 줄 제목, 병합 셀)를 자동 인식한다
   assert.strictEqual(analysis.labels[mapping.odA].startsWith('Cable O.D.'), true);
   assert.strictEqual(mapping.odA, 7);
   assert.strictEqual(mapping.odB, 8);
-  assert.strictEqual(mapping.batchNo, 3);
-  assert.strictEqual(mapping.fiberNo, 4);
+  assert.strictEqual(mapping.batchNo, 4);   // Drum No.
+  assert.strictEqual(mapping.salesNo, 2);   // 수주 번호
+  assert.strictEqual(mapping.qty, 5);       // Quantity(m)
+  assert.strictEqual(mapping.fiberNo, -1);  // 원본에 없음
+  assert.strictEqual(rows[0].fiberNo, '1'); // 기본값
   assert.strictEqual(mapping.att1310, 12);
   assert.strictEqual(mapping.att1550, 13);
   assert.strictEqual(mapping.marking, 14);
@@ -90,11 +94,17 @@ test('원본 양식: 외경 초과와 인쇄간격 초과를 잡아낸다', () =
   assert.strictEqual(ev.qaResult, 'FAIL');
 });
 
+test('수주번호 앞부분과 미국식 날짜 변환', () => {
+  assert.strictEqual(core.salesPrefix('2026-S50-0144-001-001'), '2026-S50-0144');
+  assert.strictEqual(core.usDate('2026-07-13'), '07/13/26');
+});
+
 test('열 제목 없이 데이터만 붙여넣으면 입력 양식 순서로 읽는다', () => {
   const body = csv.trim().split(/\r?\n/).slice(1).join('\n');
   const { rows } = core.mapRows(core.parseCSV(body));
   assert.strictEqual(rows.length, 12);
-  assert.strictEqual(rows[0].fiberNo, 'F01');
+  assert.strictEqual(rows[0].batchNo, '01001');
+  assert.strictEqual(rows[0].fiberNo, '1');
 });
 
 test('핵심 로직에 외부 통신 코드가 없다 (보안 점검)', () => {
