@@ -1,0 +1,78 @@
+# 코드가 올라올 때마다:
+#   1) 판정 로직 자동 테스트
+#   2) 엑셀 라이브러리(ExcelJS)를 GitHub 서버에서 직접 내려받아 웹페이지 조립
+#   3) GitHub Pages에 자동 배포 + 사내 PC용 오프라인 패키지(ZIP) 생성
+# 실제 시험 데이터는 저장소에 없으므로 이 과정에서 사내 데이터가 사용되는 일은 없습니다.
+name: Test and Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 판정 로직 테스트
+        run: node --test tests/report-core.test.js
+      - name: 실제 데이터 파일 업로드 차단 점검
+        run: |
+          found=$(git ls-files '*.xlsx' '*.xls' '*.csv' | grep -v '^sample-data/' || true)
+          if [ -n "$found" ]; then
+            echo "샘플 폴더 밖의 데이터 파일이 있습니다. 실제 데이터일 수 있어 배포를 중단합니다:"
+            echo "$found"
+            exit 1
+          fi
+          echo "데이터 파일 점검 통과"
+
+  build:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 웹페이지 조립 (ExcelJS 4.4.0 내려받기)
+        run: |
+          mkdir -p _site/lib
+          cp -r index.html js config sample-data README.md _site/
+          npm pack exceljs@4.4.0 --silent
+          tar xzf exceljs-4.4.0.tgz
+          cp package/dist/exceljs.min.js _site/lib/
+          cp package/LICENSE _site/lib/exceljs.LICENSE
+      - name: 사내 PC용 오프라인 패키지
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-offline
+          path: _site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
