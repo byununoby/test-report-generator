@@ -1,5 +1,5 @@
 Test Report 자동 생성기
-광케이블 출하 시험 데이터(엑셀/CSV)를 불러오면 규격 판정, 표지(Cover), Test Report, 통계를 한 번에 만들어 주는 웹 도구입니다.
+광케이블 출하 시험 데이터(엑셀/CSV)를 불러오면 **규격 판정, 표지(Cover), Test Report(TYPE)**를 사내 양식 그대로 한 번에 만들어 주는 웹 도구입니다.
 핵심: 시험 데이터는 사용자 PC 밖으로 한 바이트도 나가지 않습니다. 웹페이지로 배포되지만 서버가 없고, 모든 처리는 브라우저 안에서만 이루어집니다.
 왜 만들었나
 기존 방식	이 도구
@@ -36,10 +36,20 @@ Test Report 자동 생성기
 규격 값 수정
 화면의 규격 값 수정에서 제품군별 규격과 보고서 주문번호 열 제목을 바꿀 수 있습니다. 입력값은 사용하는 PC 브라우저에만 저장되므로, 실제 사내 규격이 GitHub에 올라가지 않습니다.
 출력물
-Cover 시트: 표지 (Date, Order No., PO No., Customer, Cable Type, COLOR, Quantity, Batch No., 작성/검토/승인, 제품명 참고표)
-Test Report 시트: 시험 결과표, 규격행, 불합격 셀 강조, QA RESULTS 자동 기재
-Statistics 시트: 항목별 평균, 최소, 최대, 표준편차
-파일명은 문서번호 규칙 `TR-날짜-오더번호.xlsx`로 자동 부여
+사내 Test Report 양식과 같은 배치의 엑셀 파일을 만듭니다.
+Cover 시트: 표지 테두리, TEST REPORT 제목, Date / Order No. / PO No. / Customer / Cable Type / COLOR / Quantity / Batch No. 표, 작성·검토·승인 칸, 오른쪽 제품명 참고표
+TYPE 시트: 상단 굵은 선, Test Report 제목, Product Name / Color / Inspection Date / Quantity(D/M) / QA RESULTS, 노란색 2단 머리글 시험 결과표 (머리글 행은 인쇄 시 매 페이지 반복)
+불합격 값만 빨간 칸으로 표시
+파일명 규칙: `YYMMDD MDU Drop Cable Test Report(2.9Riser)(TYPE-1).xlsx`
+자동 입력 규칙
+항목	자동 입력 방식	예
+표지 Order No.	수주번호 앞 3마디	2026-S99-0001
+표지 PO No.	원본 ORDER NO.	900001
+Quantity	드럼 수 + 총 길이(Quantity(m) 합계, 없으면 OTDR 합계)	60 D/M (120km)
+Batch No.	첫 번째 ~ 마지막 Drum No.	#01001 ~ #01060
+FIBER NO.	원본에 없으면 1	1
+Inspection Date	날짜를 MM/DD/YY로	07/13/26
+모든 자동값은 화면에서 직접 고칠 수 있습니다.
 규격 변경
 `config/specs.js` 한 파일만 수정하면 화면, 엑셀, 자동 테스트에 모두 반영됩니다. 제품 종류(Type 1~8)와 제품별 규격(외경, 타이트버퍼, 1310/1550 손실)을 정의합니다.
 > 실제 사내 규격값은 공개 저장소에 올리지 말고, 사내 PC에 받은 사본에서만 수정하세요.
