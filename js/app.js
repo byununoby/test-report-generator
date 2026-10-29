@@ -20,6 +20,11 @@
       sel.appendChild(o);
     });
     $('date').value = new Date().toISOString().slice(0, 10);
+    $('date').addEventListener('change', suggestSeq);
+    suggestSeq();
+    // Customer: 한 번 입력하면 이 PC 브라우저에 고정 (고객사명이 GitHub에 올라가지 않도록 코드에는 넣지 않음)
+    $('customer').value = store('customer') || C.defaultCustomer || '';
+    $('customer').addEventListener('change', function () { store('customer', this.value.trim()); });
     loadSpecOverrides();
     sel.addEventListener('change', function () { $('color').value = colorName(typeOf().color); renderSpecEditor(); refresh(); });
     $('color').value = colorName(typeOf().color);
@@ -517,11 +522,26 @@
     return ws;
   }
 
+  // 파일명: 261029-1 MDU Drop Cable Test Report(2.9Riser)(TYPE-1_WH_120km).xlsx
   function fileName(o) {
-    var d = String(o.date || '').replace(/-/g, '').slice(2);
-    var short = o.type.name.replace('㎜', '').replace(/mm/i, '').replace(/\s*Cable\s*/i, '').replace(/I\/O/, 'IO').replace(/\s+/g, '');
-    return (d || '000000') + ' MDU Drop Cable Test Report(' + short + ')(' + o.type.id.toUpperCase().replace(' ', '-') + ').xlsx';
+    var d = String(o.date || '').replace(/-/g, '').slice(2) || '000000';
+    var seq = parseInt($('fileSeq').value, 10) || 1;
+    // 2.9㎜ Riser Cable → 2.9Riser, 2.9㎜ Riser I/O Cable → 2.9IO, 2.9㎜ Plenum Cable → 2.9Plenum
+    var size = (/^[\d.]+/.exec(o.type.name) || [''])[0];
+    var short = /I\/O/i.test(o.type.name) ? size + 'IO'
+      : o.type.name.replace('㎜', '').replace(/mm/i, '').replace(/\s*Cable\s*/i, '').replace(/\s+/g, '');
+    var code = o.type.color;
+    Object.keys(C.colorNames || {}).forEach(function (k) { if (C.colorNames[k].toLowerCase() === String(o.color).toLowerCase()) code = k; });
+    var m = /\(\s*([\d.,]+)\s*km\s*\)/i.exec(o.quantity);
+    var km = m ? m[1] : String(Math.round(state.ev.totalQty / 1000));
+    var name = d + '-' + seq + ' MDU Drop Cable Test Report(' + short + ')(' +
+      o.type.id.toUpperCase().replace(' ', '-') + '_' + code + '_' + km + 'km).xlsx';
+    return name.replace(/[\\/:*?"<>|]/g, '');
   }
+
+  // 같은 날짜에 저장할 때마다 순번 자동 증가 (이 PC에 기억, 직접 수정 가능)
+  function seqKey() { return 'fileSeq:' + $('date').value; }
+  function suggestSeq() { $('fileSeq').value = (store(seqKey()) || 0) + 1; }
 
   function exportExcel() {
     if (!state.ev || noExcel()) return;
@@ -532,6 +552,8 @@
     wb.xlsx.writeBuffer().then(function (buf) {
       var blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       saveBlob(blob, fileName(o));
+      store(seqKey(), parseInt($('fileSeq').value, 10) || 1);
+      suggestSeq();
       setStatus('엑셀 파일을 만들었습니다. 다운로드 폴더를 확인하세요.', 'ok');
     });
   }
