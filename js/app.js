@@ -416,36 +416,41 @@
   function buildCover(wb, o) {
     var ws = wb.addWorksheet('Cover', {
       views: [{ showGridLines: false }],
-      pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 1, horizontalCentered: true,
+      pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 1,
+        horizontalCentered: true, verticalCentered: true,
         margins: { left: 0.5, right: 0.5, top: 0.6, bottom: 0.6, header: 0.3, footer: 0.3 } }
     });
-    ws.pageSetup.printArea = 'A1:H32';
-    [4.6, 4.3, 7, 7, 7, 8.4, 8.4, 8.4, 6.7, 9, 19.5, 11.5, 6.6].forEach(function (w, i) { ws.getColumn(i + 1).width = w; });
-    for (var r = 1; r <= 32; r++) ws.getRow(r).height = 13.5;
+    ws.pageSetup.printArea = 'A$1:H$32'; // ExcelJS가 $A$1:$H$32로 저장
+    // A4 세로 한 장(A1:H32)을 꽉 채우는 크기
+    [7, 7, 11, 11, 11, 13.5, 13.5, 13.5, 6.7, 9, 19.5, 11.5, 6.6].forEach(function (w, i) { ws.getColumn(i + 1).width = w; });
+    for (var r = 1; r <= 32; r++) ws.getRow(r).height = 22;
+    ws.getRow(1).height = 10; ws.getRow(32).height = 10;
 
-    mergeSet(ws, 'A5:H8', 'TEST REPORT', { font: { name: 'Times New Roman', size: 24, bold: true }, alignment: center });
+    mergeSet(ws, 'A5:H8', 'TEST REPORT', { font: { name: 'Times New Roman', size: 32, bold: true }, alignment: center });
 
     var items = [['Date', o.date], ['Order No.', o.orderNo], ['PO No.', o.poNo], ['Customer', o.customer],
       ['Cable Type', o.product], ['COLOR', o.color], ['Quantity', o.quantity]];
-    var bold = { name: KFONT, size: 10, bold: true };
+    var bold = { name: KFONT, size: 12, bold: true };
     items.forEach(function (it, i) {
       var r = 14 + i;
       mergeSet(ws, 'C' + r + ':D' + r, it[0], { font: bold, alignment: center, fill: GREY });
       mergeSet(ws, 'E' + r + ':G' + r, it[1], { font: bold, alignment: center });
-      ws.getRow(r).height = 17;
+      ws.getRow(r).height = 27;
       boxRange(ws, r, 3, r, 4, thin); boxRange(ws, r, 5, r, 7, thin);
     });
     mergeSet(ws, 'C21:D22', 'Batch No.', { font: bold, alignment: center, fill: GREY });
     mergeSet(ws, 'E21:G22', o.batch, { font: bold, alignment: center });
-    ws.getRow(21).height = 17; ws.getRow(22).height = 17;
+    ws.getRow(21).height = 27; ws.getRow(22).height = 27;
     boxRange(ws, 21, 3, 22, 4, thin); boxRange(ws, 21, 5, 22, 7, thin);
 
     ['작    성', '검    토', '승    인'].forEach(function (h, i) {
       var col = 6 + i, L = String.fromCharCode(64 + col);
-      var c = ws.getCell(L + '28'); c.value = h; c.font = { name: KFONT, size: 9, bold: true }; c.alignment = center;
-      mergeSet(ws, L + '29:' + L + '31', o.signers[i] || '', { font: { name: KFONT, size: 10 }, alignment: center });
+      var c = ws.getCell(L + '28'); c.value = h; c.font = { name: KFONT, size: 11, bold: true }; c.alignment = center;
+      mergeSet(ws, L + '29:' + L + '31', o.signers[i] || '', { font: { name: KFONT, size: 11 }, alignment: center });
       boxRange(ws, 28, col, 28, col, thin); boxRange(ws, 29, col, 31, col, thin);
     });
+    ws.getRow(28).height = 22;
+    for (var sr = 29; sr <= 31; sr++) ws.getRow(sr).height = 30;
     boxRange(ws, 2, 1, 31, 8, medium);   // 표지 바깥 테두리
 
     var small = { name: KFONT, size: 8, bold: true };
@@ -508,15 +513,15 @@
     var numFmt = { otdr: '#,##0', odMax: '0.00', odMin: '0.00', tightBuffer: '0', att1310: '0.000', att1550: '0.000' };
     state.rows.forEach(function (row, i) {
       var r = ws.getRow(14 + i), checks = ev.results[i].checks;
-      r.height = 15;
+      r.height = 36;
       keys.forEach(function (k, j) {
         var c = r.getCell(j + 1), v = row[k] == null ? '' : row[k];
         if ((k === 'marking' || k === 'orderNo' || k === 'fiberNo') && v !== '' && /^\d+(\.\d+)?$/.test(String(v))) v = Number(v);
         c.value = v;
         if (numFmt[k]) c.numFmt = numFmt[k];
-        c.font = { name: 'Arial', size: k === 'orderNo' ? 11 : 9 };
+        c.font = { name: KFONT, size: 11 };
         c.alignment = center; c.border = box;
-        if (checks[k] === false) { c.fill = RED; c.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FFC00000' } }; }
+        if (checks[k] === false) { c.fill = RED; c.font = { name: KFONT, size: 11, bold: true, color: { argb: 'FFC00000' } }; }
       });
     });
     return ws;
