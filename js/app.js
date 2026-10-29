@@ -422,7 +422,7 @@
     });
     ws.pageSetup.printArea = 'A$1:H$32'; // ExcelJS가 $A$1:$H$32로 저장
     // A4 세로 한 장(A1:H32)을 꽉 채우는 크기
-    [7, 7, 11, 11, 11, 13.5, 13.5, 13.5, 6.7, 9, 19.5, 11.5, 6.6].forEach(function (w, i) { ws.getColumn(i + 1).width = w; });
+    [7, 7, 11, 11, 11, 13.5, 13.5, 13.5, 6.7, 10, 25, 13, 9].forEach(function (w, i) { ws.getColumn(i + 1).width = w; });
     for (var r = 1; r <= 32; r++) ws.getRow(r).height = 21;
     ws.getRow(1).height = 10; ws.getRow(32).height = 10;
 
@@ -453,8 +453,8 @@
     for (var sr = 29; sr <= 31; sr++) ws.getRow(sr).height = 32;
     boxRange(ws, 2, 1, 31, 8, medium);   // 표지 바깥 테두리
 
-    var small = { name: KFONT, size: 8, bold: true };
-    var t = ws.getCell('J13'); t.value = '※ 제품명 참고'; t.font = { name: KFONT, size: 8, bold: true };
+    var small = { name: KFONT, size: 11, bold: true };
+    var t = ws.getCell('J13'); t.value = '※ 제품명 참고'; t.font = { name: KFONT, size: 11, bold: true };
     ['', 'Cable Type', 'FIBER', 'COLOR'].forEach(function (h, i) {
       var c = ws.getRow(14).getCell(10 + i); c.value = h; c.font = small; c.alignment = center; c.border = dotBox;
     });
@@ -488,10 +488,10 @@
     var head = [['Product Name', o.product], ['Color', o.color], ['Inspection Date', o.usDate], ['Quantity(D/M)', o.quantityShort], ['QA RESULTS', o.qa]];
     head.forEach(function (h, i) {
       var r = 6 + i;
-      ws.getRow(r).height = 18;
-      var l = ws.getCell('D' + r); l.value = h[0]; l.font = { name: 'Arial', size: 11, bold: true, italic: true };
+      ws.getRow(r).height = 20;
+      var l = ws.getCell('D' + r); l.value = h[0]; l.font = { name: 'Arial', size: 12, bold: true, italic: true };
       ws.mergeCells('F' + r + ':G' + r);
-      var v = ws.getCell('F' + r); v.value = h[1]; v.font = { name: 'Arial', size: 11 };
+      var v = ws.getCell('F' + r); v.value = h[1]; v.font = { name: 'Arial', size: 12 };
       v.alignment = { horizontal: 'left', vertical: 'middle' };
       ws.getCell('F' + r).border = { bottom: thin }; ws.getCell('G' + r).border = { bottom: thin };
     });
