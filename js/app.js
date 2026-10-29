@@ -423,34 +423,34 @@
     ws.pageSetup.printArea = 'A$1:H$32'; // ExcelJS가 $A$1:$H$32로 저장
     // A4 세로 한 장(A1:H32)을 꽉 채우는 크기
     [7, 7, 11, 11, 11, 13.5, 13.5, 13.5, 6.7, 9, 19.5, 11.5, 6.6].forEach(function (w, i) { ws.getColumn(i + 1).width = w; });
-    for (var r = 1; r <= 32; r++) ws.getRow(r).height = 22;
+    for (var r = 1; r <= 32; r++) ws.getRow(r).height = 21;
     ws.getRow(1).height = 10; ws.getRow(32).height = 10;
 
-    mergeSet(ws, 'A5:H8', 'TEST REPORT', { font: { name: 'Times New Roman', size: 32, bold: true }, alignment: center });
+    mergeSet(ws, 'A5:H8', 'TEST REPORT', { font: { name: 'Times New Roman', size: 36, bold: true }, alignment: center });
 
     var items = [['Date', o.date], ['Order No.', o.orderNo], ['PO No.', o.poNo], ['Customer', o.customer],
       ['Cable Type', o.product], ['COLOR', o.color], ['Quantity', o.quantity]];
-    var bold = { name: KFONT, size: 12, bold: true };
+    var bold = { name: KFONT, size: 13, bold: true };
     items.forEach(function (it, i) {
       var r = 14 + i;
       mergeSet(ws, 'C' + r + ':D' + r, it[0], { font: bold, alignment: center, fill: GREY });
       mergeSet(ws, 'E' + r + ':G' + r, it[1], { font: bold, alignment: center });
-      ws.getRow(r).height = 27;
+      ws.getRow(r).height = 30;
       boxRange(ws, r, 3, r, 4, thin); boxRange(ws, r, 5, r, 7, thin);
     });
     mergeSet(ws, 'C21:D22', 'Batch No.', { font: bold, alignment: center, fill: GREY });
     mergeSet(ws, 'E21:G22', o.batch, { font: bold, alignment: center });
-    ws.getRow(21).height = 27; ws.getRow(22).height = 27;
+    ws.getRow(21).height = 30; ws.getRow(22).height = 30;
     boxRange(ws, 21, 3, 22, 4, thin); boxRange(ws, 21, 5, 22, 7, thin);
 
     ['작    성', '검    토', '승    인'].forEach(function (h, i) {
       var col = 6 + i, L = String.fromCharCode(64 + col);
-      var c = ws.getCell(L + '28'); c.value = h; c.font = { name: KFONT, size: 11, bold: true }; c.alignment = center;
-      mergeSet(ws, L + '29:' + L + '31', o.signers[i] || '', { font: { name: KFONT, size: 11 }, alignment: center });
+      var c = ws.getCell(L + '28'); c.value = h; c.font = { name: KFONT, size: 12, bold: true }; c.alignment = center;
+      mergeSet(ws, L + '29:' + L + '31', o.signers[i] || '', { font: { name: KFONT, size: 12 }, alignment: center });
       boxRange(ws, 28, col, 28, col, thin); boxRange(ws, 29, col, 31, col, thin);
     });
-    ws.getRow(28).height = 22;
-    for (var sr = 29; sr <= 31; sr++) ws.getRow(sr).height = 30;
+    ws.getRow(28).height = 24;
+    for (var sr = 29; sr <= 31; sr++) ws.getRow(sr).height = 32;
     boxRange(ws, 2, 1, 31, 8, medium);   // 표지 바깥 테두리
 
     var small = { name: KFONT, size: 8, bold: true };
@@ -476,27 +476,28 @@
         margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.3, footer: 0.3 } }
     });
     ws.pageSetup.printTitlesRow = '12:13';
-    [11.5, 9, 8.3, 5.5, 8.5, 8.5, 12, 9.5, 9.5, 9.5].forEach(function (w, i) { ws.getColumn(i + 1).width = w; });
+    // 데이터 글자(맑은 고딕 11pt)에 맞춰 전체 비율 확대
+    [13, 11, 11, 8, 10, 10, 18, 11, 11, 11].forEach(function (w, i) { ws.getColumn(i + 1).width = w; });
     ws.getRow(1).height = 10; ws.getRow(2).height = 10; ws.getRow(3).height = 6;
     for (var c = 1; c <= 10; c++) ws.getRow(3).getCell(c).border = { bottom: medium };
 
-    ws.getRow(4).height = 30;
-    mergeSet(ws, 'A4:J4', 'Test    Report', { font: { name: 'Arial', size: 18, bold: true, underline: true }, alignment: { horizontal: 'center', vertical: 'middle' } });
+    ws.getRow(4).height = 38;
+    mergeSet(ws, 'A4:J4', 'Test    Report', { font: { name: 'Arial', size: 22, bold: true, underline: true }, alignment: { horizontal: 'center', vertical: 'middle' } });
     ws.getRow(5).height = 6;
 
     var head = [['Product Name', o.product], ['Color', o.color], ['Inspection Date', o.usDate], ['Quantity(D/M)', o.quantityShort], ['QA RESULTS', o.qa]];
     head.forEach(function (h, i) {
       var r = 6 + i;
-      ws.getRow(r).height = 14;
-      var l = ws.getCell('D' + r); l.value = h[0]; l.font = { name: 'Arial', size: 9, bold: true, italic: true };
+      ws.getRow(r).height = 18;
+      var l = ws.getCell('D' + r); l.value = h[0]; l.font = { name: 'Arial', size: 11, bold: true, italic: true };
       ws.mergeCells('F' + r + ':G' + r);
-      var v = ws.getCell('F' + r); v.value = h[1]; v.font = { name: 'Arial', size: 9 };
+      var v = ws.getCell('F' + r); v.value = h[1]; v.font = { name: 'Arial', size: 11 };
       v.alignment = { horizontal: 'left', vertical: 'middle' };
       ws.getCell('F' + r).border = { bottom: thin }; ws.getCell('G' + r).border = { bottom: thin };
     });
     ws.getRow(11).height = 10;
 
-    var hf = { name: KFONT, size: 9 };
+    var hf = { name: KFONT, size: 11 };
     var label = C.orderNoLabel.replace(' Order', '\nOrder');
     [['A12:A13', label], ['B12:B13', 'Batch No.'], ['C12:C13', 'OTDR (m)'], ['D12:D13', 'FIBER\nNO.'],
       ['E12:F12', 'Cable O.D. (mm)'], ['G12:G13', 'Tight Buffer O.D.\n(um)'], ['H12:I12', 'Attenuation(dB/Km)'], ['J12:J13', 'marking']]
@@ -504,7 +505,7 @@
     [['E13', 'Max.'], ['F13', 'Min.'], ['H13', 'ose1310'], ['I13', 'ose1550']].forEach(function (x) {
       var c = ws.getCell(x[0]); c.value = x[1]; c.font = hf; c.alignment = center;
     });
-    ws.getRow(12).height = 20; ws.getRow(13).height = 20;
+    ws.getRow(12).height = 24; ws.getRow(13).height = 24;
     for (var r0 = 12; r0 <= 13; r0++) for (var c0 = 1; c0 <= 10; c0++) {
       var hc = ws.getRow(r0).getCell(c0); hc.fill = YELLOW; hc.border = box;
     }
