@@ -514,7 +514,7 @@
     var numFmt = { otdr: '#,##0', odMax: '0.00', odMin: '0.00', tightBuffer: '0', att1310: '0.000', att1550: '0.000' };
     state.rows.forEach(function (row, i) {
       var r = ws.getRow(14 + i), checks = ev.results[i].checks;
-      r.height = 36;
+      r.height = 22.2;   // 37픽셀(화면 배율 125% 기준)
       keys.forEach(function (k, j) {
         var c = r.getCell(j + 1), v = row[k] == null ? '' : row[k];
         if ((k === 'marking' || k === 'orderNo' || k === 'fiberNo') && v !== '' && /^\d+(\.\d+)?$/.test(String(v))) v = Number(v);
