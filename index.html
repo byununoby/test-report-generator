@@ -77,6 +77,8 @@ textarea:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; bo
 .mapgrid { display: grid; gap: 6px; margin-bottom: 8px; }
 .mapgrid label { display: grid; grid-template-columns: 9.5em 1fr; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
 .mapgrid select { font-size: 12.5px; padding: 5px 6px; }
+.seq { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; font-size: 12.5px; color: var(--muted); }
+.seq input { width: 64px; text-align: center; }
 .btn.wide { grid-column: 1 / -1; font-weight: 500; font-size: 13px; }
 .drop { border: 1.5px dashed var(--line); border-radius: 8px; padding: 16px; text-align: center; background: var(--field); cursor: pointer; display: block; }
 .drop.over { border-color: var(--blue); }
@@ -234,6 +236,7 @@ table { border-collapse: collapse; }
         <div class="verdict" id="verdict"></div>
         <div id="verdictText"></div>
       </div>
+      <label class="seq">파일 순번 (같은 날짜 몇 번째 파일)<input type="text" id="fileSeq" inputmode="numeric" value="1"></label>
       <div class="actions">
         <button type="button" class="btn primary" id="excelBtn" disabled>엑셀로 저장</button>
         <button type="button" class="btn" id="printBtn" disabled>PDF로 인쇄</button>
