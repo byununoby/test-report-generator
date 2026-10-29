@@ -1,0 +1,13 @@
+# 실제 사내 데이터가 실수로 올라가지 않도록 차단
+*.xlsx
+*.xls
+*.xlsm
+*.csv
+*.pdf
+!sample-data/*.csv
+data/
+real/
+output/
+~$*
+.DS_Store
+Thumbs.db
