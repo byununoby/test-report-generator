@@ -14,15 +14,18 @@
 
     // 표지 오른쪽 "제품명 참고" 표
     cableTypes: [
-      { id: 'Type 1', name: '2.9mm Riser Cable',     fiber: 'BIF, UBIF', color: 'WH', spec: '2.9mm' },
-      { id: 'Type 2', name: '2.9mm Riser I/O Cable', fiber: 'BIF, UBIF', color: 'WH', spec: '2.9mm' },
-      { id: 'Type 3', name: '2.9mm Riser I/O Cable', fiber: 'BIF, UBIF', color: 'BK', spec: '2.9mm' },
-      { id: 'Type 4', name: '2.9mm Plenum Cable',    fiber: 'BIF, UBIF', color: 'WH', spec: '2.9mm' },
-      { id: 'Type 5', name: '4.8mm Riser Cable',     fiber: 'UBIF',      color: 'WH', spec: '4.8mm' },
-      { id: 'Type 6', name: '4.8mm Riser I/O Cable', fiber: 'UBIF',      color: 'WH', spec: '4.8mm' },
-      { id: 'Type 7', name: '4.8mm Riser I/O Cable', fiber: 'UBIF',      color: 'BK', spec: '4.8mm' },
-      { id: 'Type 8', name: '4.8mm Plenum Cable',    fiber: 'UBIF',      color: '-',  spec: '4.8mm' }
+      { id: 'Type 1', name: '2.9㎜ Riser Cable',     fiber: 'BIF, UBIF', color: 'WH', spec: '2.9mm' },
+      { id: 'Type 2', name: '2.9㎜ Riser I/O Cable', fiber: 'BIF, UBIF', color: 'WH', spec: '2.9mm' },
+      { id: 'Type 3', name: '2.9㎜ Riser I/O Cable', fiber: 'BIF, UBIF', color: 'BK', spec: '2.9mm' },
+      { id: 'Type 4', name: '2.9㎜ Plenum Cable',    fiber: 'BIF, UBIF', color: 'WH', spec: '2.9mm' },
+      { id: 'Type 5', name: '4.8㎜ Riser Cable',     fiber: 'UBIF',      color: 'WH', spec: '4.8mm' },
+      { id: 'Type 6', name: '4.8㎜ Riser I/O Cable', fiber: 'UBIF',      color: 'WH', spec: '4.8mm' },
+      { id: 'Type 7', name: '4.8㎜ Riser I/O Cable', fiber: 'UBIF',      color: 'BK', spec: '4.8mm' },
+      { id: 'Type 8', name: '4.8㎜ Plenum Cable',    fiber: 'UBIF',      color: '-',  spec: '4.8mm' }
     ],
+
+    // 색상 코드 → 보고서 표기
+    colorNames: { WH: 'White', BK: 'Black', '-': '-' },
 
     // 판정 규격 (예시값). min/max 중 필요한 것만 지정
     specs: {
