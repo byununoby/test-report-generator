@@ -70,6 +70,9 @@
     refresh();
   }
 
+  // 드럼 1개당 기준 길이(km). 표지 Quantity의 (km)와 파일명에 사용: 320 D/M → 640km
+  var DRUM_KM = 2;
+
   function colorName(code) { return (C.colorNames && C.colorNames[code]) || code; }
 
   function typeOf() {
@@ -247,7 +250,7 @@
       var first = state.rows[0] || {};
       $('orderNo').placeholder = Core.salesPrefix(first.salesNo) || '';
       $('poNo').placeholder = first.orderNo || '';
-      $('quantity').placeholder = ev.drums + ' D/M (' + Math.round(ev.totalQty / 1000) + 'km)';
+      $('quantity').placeholder = ev.drums + ' D/M (' + ev.drums * DRUM_KM + 'km)';
       var b = ev.batches;
       $('batchNo').placeholder = !b.length ? '' : b.length === 1 ? '#' + b[0] : '#' + b[0] + ' ~ #' + b[b.length - 1];
       $('productName').placeholder = ev.type.name;
@@ -539,7 +542,7 @@
     var code = o.type.color;
     Object.keys(C.colorNames || {}).forEach(function (k) { if (C.colorNames[k].toLowerCase() === String(o.color).toLowerCase()) code = k; });
     var m = /\(\s*([\d.,]+)\s*km\s*\)/i.exec(o.quantity);
-    var km = m ? m[1] : String(Math.round(state.ev.totalQty / 1000));
+    var km = m ? m[1] : String(state.ev.drums * DRUM_KM);
     var name = d + '-' + seq + ' MDU Drop Cable Test Report(' + short + ')(' +
       o.type.id.toUpperCase().replace(' ', '-') + '_' + code + '_' + km + 'km).xlsx';
     return name.replace(/[\\/:*?"<>|]/g, '');
