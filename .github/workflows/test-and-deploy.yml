@@ -57,6 +57,13 @@ jobs:
           tar xzf exceljs-4.4.0.tgz
           cp package/dist/exceljs.min.js _site/lib/
           cp package/LICENSE _site/lib/exceljs.LICENSE
+      - name: 파일 1개짜리 도구 만들기 (ECM, 메일 공유용)
+        run: node tools/build-single.js _site _site/test-report-generator.html
+      - name: 파일 1개짜리 도구 내려받기용
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-single
+          path: _site/test-report-generator.html
       - name: 사내 PC용 오프라인 패키지
         uses: actions/upload-artifact@v4
         with:
